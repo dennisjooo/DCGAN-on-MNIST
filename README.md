@@ -18,3 +18,4 @@ The Discriminator can correctly identify about 86% of the images. That being sai
 
 - [Deep Convolutional GANs by Alec Radford, Luke Metz, Soumith Chintala](https://arxiv.org/abs/1511.06434)
 - Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow 3rd edition by Aurelien Geron
+- Machine Learning with PyTorch and Scikit-Learn by Sebastian Raschka

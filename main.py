@@ -10,7 +10,7 @@ import joblib
 def load_or_new(generator, discriminator, device, num_epochs, 
                 train_dataloader, optimizer_generator, optimizer_discriminator, 
                 criterion, model_path, batch_size=128, 
-                load=True, retrain=False, save=True, noise=None):
+                load=True, retrain=False, save=True, fixed_noise=None, smooth=0.1):
     
     # Loading the models
     if load:
@@ -24,7 +24,7 @@ def load_or_new(generator, discriminator, device, num_epochs,
     if retrain:
         losses_g, losses_d = t.train(num_epochs, train_dataloader, 
                                      generator, discriminator, optimizer_generator, 
-                                     optimizer_discriminator, device, criterion, batch_size=batch_size, noise=noise)
+                                     optimizer_discriminator, device, criterion, batch_size=batch_size, fixed_noise=fixed_noise, smooth=smooth)
     else:
         losses_g = []
         losses_d = []
@@ -75,11 +75,11 @@ if __name__ == "__main__":
     num_epochs = 10
     lr_g = 0.0002
     lr_d = 0.0002
-    betas =(0.5, 0.999)
+    betas =(0.9, 0.999)
+    smooth = 0.1
 
     # Noise vector for visualization
-    
-    noise = torch.randn(16, 100, device=device)
+    fixed_noise = torch.randn(16, 100, device=device)
 
     # Downloading the dataset
     dataset = t.get_data(train=True, download=True, transform=True)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     losses_g, losses_d = load_or_new(generator, discriminator, device, num_epochs, 
                                      train_dataloader, optimizer_generator, optimizer_discriminator, 
                                      criterion, model_paths, batch_size=batch_size, 
-                                     load=True, retrain=True, save=False, noise=None)
+                                     load=True, retrain=True, save=False, fixed_noise=None, smooth=smooth)
     
     # Plotting the losses
     plot_losses(losses_g, losses_d, num_epochs=num_epochs, 

@@ -18,8 +18,13 @@ def get_data(train=True, download=True, transform=True):
     # Downloading the MNIST dataset
     mnist_train = datasets.MNIST(root='./data', train=train, download=download, 
                                  transform=transform_mnist)
+    mnist_test = datasets.MNIST(root='./data', train=False, download=download,
+                                transform=transform_mnist)
     
-    return mnist_train
+    # Concatenating the datasets
+    mnist = torch.utils.data.ConcatDataset([mnist_train, mnist_test])
+    
+    return mnist
 
 
 def get_dataloader(dataset, batch_size=128, shuffle=True):
@@ -30,7 +35,7 @@ def get_dataloader(dataset, batch_size=128, shuffle=True):
     return dataloader
 
 
-def get_optimizer(model, lr=0.0002, beta1=0.5, beta2=0.999):
+def get_optimizer(model, lr=0.0002, beta1=0.9, beta2=0.999):
         
         # Defining the optimizer
         optimizer = optim.Adam(model.parameters(), lr=lr, betas=(beta1, beta2))
@@ -46,7 +51,7 @@ def get_loss():
     return loss
 
 
-def train_discriminator(discriminator, optimizer, real_data, fake_data, criterion, device):
+def train_discriminator(discriminator, optimizer, real_data, fake_data, criterion, device, smooth=0.1):
 
     # Setting the gradients to zero
     optimizer.zero_grad()
@@ -58,15 +63,16 @@ def train_discriminator(discriminator, optimizer, real_data, fake_data, criterio
     prediction_fake = discriminator(fake_data)
 
     # Calculating the loss of real images
-    loss_real = criterion(prediction_real, torch.ones_like(prediction_real, device=device) + 0.1 * torch.rand(prediction_real.shape, device=device))
-    loss_real.backward()
+    loss_real = criterion(prediction_real, torch.ones_like(prediction_real, device=device) + smooth * torch.rand(prediction_real.shape, device=device))
     
     # Calculating the loss of fake images
-    loss_fake = criterion(prediction_fake, torch.zeros_like(prediction_fake, device=device) - 0.1 * torch.rand(prediction_fake.shape, device=device))
-    loss_fake.backward()
+    loss_fake = criterion(prediction_fake, torch.zeros_like(prediction_fake, device=device) - smooth * torch.rand(prediction_fake.shape, device=device))
     
     # Summing up the losses
     loss = loss_real + loss_fake
+
+    # Calculating the gradients
+    loss.backward()
 
     # Updating the weights
     optimizer.step()
@@ -98,7 +104,7 @@ def train_generator(discriminator, optimizer, fake_data, criterion, device):
 
 # Defining the training loop
 def train(num_epochs, train_dataloader, generator, discriminator, optimizer_generator, 
-          optimizer_discriminator, device, criterion, batch_size=128, noise=None):
+          optimizer_discriminator, device, criterion, batch_size=128, fixed_noise=None, smooth=0.1):
 
     # List to store the losses
     epoch_losses_discriminator = []
@@ -121,7 +127,7 @@ def train(num_epochs, train_dataloader, generator, discriminator, optimizer_gene
 
             # Training the discriminator
             loss_discriminator = train_discriminator(discriminator, optimizer_discriminator, images, 
-                                                     generator(noise), criterion, device)
+                                                     generator(noise), criterion, device, smooth=smooth)
 
             # Training the generator
             loss_generator = train_generator(discriminator, optimizer_generator, 
@@ -140,9 +146,9 @@ def train(num_epochs, train_dataloader, generator, discriminator, optimizer_gene
         epoch_losses_generator.append(np.mean(losses_generator))
 
         # If noise is not none, generate images
-        if noise is not None:
+        if fixed_noise is not None:
             # Generating the images
-            generated_images = generator(noise).cpu().detach().numpy()
+            generated_images = generator(fixed_noise).cpu().detach().numpy()
 
             # Plotting the images
             fig, ax = plt.subplots(4, 4, figsize=(5, 5))
