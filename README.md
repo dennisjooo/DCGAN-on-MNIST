@@ -6,13 +6,13 @@ Probably has been done before (most definitely), but I was super bored and thoug
 
 ## Model
 
-The model was trained using Kaggle's P100 GPU for about 300 epochs. The structure of the model resembles the one in Aurelien Geron's book, *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow*. The generator and discriminator are both CNNs. The generator takes in a 100-dimensional noise vector and outputs a 28x28 image. The discriminator takes in a 28x28 image and outputs a single value, which is the probability that the image is real. Some noise was added to the labels to prevent the discriminator from overpowering the generator.
+The model was trained using Kaggle's P100 GPU for about 200 epochs. The structure of the model resembles the one in Sebastian Raschka's. The generator and discriminator are both CNNs. The generator takes in a 100-dimensional noise vector and outputs a 28x28 image. The discriminator takes in a 28x28 image and outputs a single value, which is the probability that the image is real. Some noise was added to the labels to prevent the discriminator from overpowering the generator.
 
 ## Results
 
 ![alt text](images//generated_images.png)
 
-The Discriminator can correctly identify about 86% of the images. That being said, the Generator might need further changes as it looked like the digits were written by someone with a bit too much to drink. Might also consider using Lightning to make the code much cleaner.
+The Discriminator can correctly identify about 99% of the images (probably a bit too powerful, thus `smooth` variable might need to be increased). That being said, the Generator might need further changes as it looked like the digits were written by someone with a bit too much to drink. Might also consider using Lightning to make the code much cleaner.
 
 ## References
 
