@@ -6,7 +6,7 @@ Probably has been done before (most definitely), but I was super bored and thoug
 
 ## Model
 
-The model was trained using Kaggle's P100 GPU for about 300 epochs. The structure of the model resembles the one in Aurelien Geron's book, *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow*. The generator and discriminator are both CNNs. The generator takes in a 100-dimensional noise vector and outputs a 28x28 image. The discriminator takes in a 28x28 image and outputs a single value, which is the probability that the image is real.
+The model was trained using Kaggle's P100 GPU for about 300 epochs. The structure of the model resembles the one in Aurelien Geron's book, *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow*. The generator and discriminator are both CNNs. The generator takes in a 100-dimensional noise vector and outputs a 28x28 image. The discriminator takes in a 28x28 image and outputs a single value, which is the probability that the image is real. Some noise was added to the labels to prevent the discriminator from overpowering the generator.
 
 ## Results
 
