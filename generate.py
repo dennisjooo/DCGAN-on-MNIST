@@ -2,6 +2,7 @@
 import torch
 import model as m
 import matplotlib.pyplot as plt
+import argparse
 
 
 def generate(generator, device, num_images=1, coding_size=100, seed=True):
@@ -11,17 +12,21 @@ def generate(generator, device, num_images=1, coding_size=100, seed=True):
 
     # Setting the seed if needed
     if seed:
+        # Seed for reproducibility
         g = torch.Generator(device=device).manual_seed(42)
-        noise = torch.randn(num_images, coding_size, device=device, generator=g)
 
+        # Creating the noise
+        noise = torch.normal(mean=0, std=1, size=(num_images, coding_size), device=device, generator=g)
     else:
-        noise = torch.randn(num_images, coding_size, device=device)
 
-    # Getting the generated images
-    generated_images = generator(noise)
+        # Creating the noise randomly
+        noise = torch.normal(mean=0, std=1, size=(num_images, coding_size), device=device)
+
+    # Generating the images
+    images = generator(noise)
 
     # Returning the generated images
-    return generated_images
+    return images
 
 
 def plot_images(images, num_images=1, figsize=(1, 1), cmap='gray', save=False, save_path=None):
@@ -46,6 +51,25 @@ def plot_images(images, num_images=1, figsize=(1, 1), cmap='gray', save=False, s
 
 
 if __name__ == "__main__":
+    # Setting the parser
+    parser = argparse.ArgumentParser(description='Generating images using the generator')
+    parser.add_argument('--model_path', type=str, default='models//generator.pth', help='Path to the generator')
+    parser.add_argument('--num_images', type=int, default=5, help='Number of images to generate')
+    parser.add_argument('--coding_size', type=int, default=100, help='Coding size of the generator')
+    parser.add_argument('--seed', type=bool, default=True, help='Whether to use a seed or not')
+    parser.add_argument('--save', type=bool, default=False, help='Whether to save the plot or not')
+    parser.add_argument('--save_path', type=str, default=None, help='Path to save the plot')
+
+    # Parsing the arguments
+    args = parser.parse_args()
+
+    # Getting the arguments
+    model_path = args.model_path
+    num_images = args.num_images
+    coding_size = args.coding_size
+    seed = args.seed
+    save = args.save
+    save_path = args.save_path
 
     # Setting the device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -54,13 +78,14 @@ if __name__ == "__main__":
     generator = m.Generator().to(device)
 
     # Loading the generator
-    generator.load_state_dict(torch.load('models//generator.pth', map_location=torch.device(device)))
+    generator.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
 
     # Generating the images
-    generated_images = generate(generator, device, num_images=5)
+    generated_images = generate(generator, device, num_images=num_images, coding_size=coding_size,
+                                seed=seed)
 
     # Plotting the images
-    plot_images(generated_images, num_images=5, figsize=(5, 5), 
-                cmap='gray', save=False, save_path=None)
+    plot_images(generated_images, num_images=num_images, figsize=(num_images, 1), 
+                cmap='gray', save=save, save_path=save_path)
         
     

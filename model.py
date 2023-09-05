@@ -25,13 +25,13 @@ class Generator(nn.Module):
 
         # Defining the layers
         self.layer_stack = nn.Sequential(
-            nn.Linear(coding_size, 128 * 7 * 7), # (N, 100) -> (N, 128 * 7 * 7)
+            nn.Linear(coding_size, 128 * 7 * 7, bias=False), # (N, 100) -> (N, 128 * 7 * 7)
             Reshape(-1, 128, 7, 7), # (N, 128 * 7 * 7) -> (N, 128, 7, 7)
             nn.BatchNorm2d(128), # 2D batch normalization
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1), # (N, 128, 7, 7) -> (N, 64, 14, 14)
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, bias=False), # (N, 128, 7, 7) -> (N, 64, 14, 14)
             nn.ReLU(), # ReLU activation
             nn.BatchNorm2d(64), # 2D batch normalization
-            nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1), # (N, 64, 14, 14) -> (N, 1, 28, 28)
+            nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1, bias=False), # (N, 64, 14, 14) -> (N, 1, 28, 28)
             nn.Tanh() # Tanh activation
         )
 
@@ -50,10 +50,10 @@ class Discriminator(nn.Module):
         
         # Defining the layers
         self.layer_stack = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1), # (N, 1, 28, 28) -> (N, 64, 14, 14)
+            nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1, bias=False), # (N, 1, 28, 28) -> (N, 64, 14, 14)
             nn.LeakyReLU(0.2), # Leaky ReLU activation
             nn.Dropout2d(0.3), # 2D dropout
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1), # (N, 64, 14, 14) -> (N, 128, 7, 7)
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False), # (N, 64, 14, 14) -> (N, 128, 7, 7)
             nn.LeakyReLU(0.2), # Leaky ReLU activation
             nn.Dropout2d(0.3), # 2D dropout
             Reshape(-1, 128 * 7 * 7), # (N, 128, 7, 7) -> (N, 128 * 7 * 7)

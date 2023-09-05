@@ -3,6 +3,7 @@ import torch
 from torchvision import transforms, datasets
 import torch.optim as optim
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def get_data(train=True, download=True, transform=True):
@@ -15,7 +16,7 @@ def get_data(train=True, download=True, transform=True):
                        ]) if transform else None
 
     # Downloading the MNIST dataset
-    mnist_train = datasets.MNIST(root='./data', train=True, download=True, 
+    mnist_train = datasets.MNIST(root='./data', train=train, download=download, 
                                  transform=transform_mnist)
     
     return mnist_train
@@ -57,11 +58,11 @@ def train_discriminator(discriminator, optimizer, real_data, fake_data, criterio
     prediction_fake = discriminator(fake_data)
 
     # Calculating the loss of real images
-    loss_real = criterion(prediction_real, torch.ones_like(prediction_real, device=device))
+    loss_real = criterion(prediction_real, torch.ones_like(prediction_real, device=device) + 0.1 * torch.rand(prediction_real.shape, device=device))
     loss_real.backward()
     
     # Calculating the loss of fake images
-    loss_fake = criterion(prediction_fake, torch.zeros_like(prediction_fake, device=device))
+    loss_fake = criterion(prediction_fake, torch.zeros_like(prediction_fake, device=device) - 0.1 * torch.rand(prediction_fake.shape, device=device))
     loss_fake.backward()
     
     # Summing up the losses
@@ -97,7 +98,7 @@ def train_generator(discriminator, optimizer, fake_data, criterion, device):
 
 # Defining the training loop
 def train(num_epochs, train_dataloader, generator, discriminator, optimizer_generator, 
-          optimizer_discriminator, device, criterion, batch_size=128):
+          optimizer_discriminator, device, criterion, batch_size=128, noise=None):
 
     # List to store the losses
     epoch_losses_discriminator = []
@@ -137,10 +138,23 @@ def train(num_epochs, train_dataloader, generator, discriminator, optimizer_gene
         # Appending the epoch losses
         epoch_losses_discriminator.append(np.mean(losses_discriminator))
         epoch_losses_generator.append(np.mean(losses_generator))
+
+        # If noise is not none, generate images
+        if noise is not None:
+            # Generating the images
+            generated_images = generator(noise).cpu().detach().numpy()
+
+            # Plotting the images
+            fig, ax = plt.subplots(4, 4, figsize=(5, 5))
+            for i in range(4):
+                for j in range(4):
+                    ax[i, j].imshow(generated_images[i * 4 + j].reshape(28, 28), cmap='gray')
+                    ax[i, j].axis('off')
+            plt.tight_layout()
+            plt.savefig('images//prog//epoch_' + str(epoch + 1) + '.png')
         
         # Printing the losses
         print('Epoch: %d/%d, Loss D: %.4f, Loss G: %.4f' % (epoch + 1, num_epochs, epoch_losses_discriminator[-1], epoch_losses_generator[-1]))
-
 
     return epoch_losses_discriminator, epoch_losses_generator
 
